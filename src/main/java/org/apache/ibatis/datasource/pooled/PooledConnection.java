@@ -232,11 +232,13 @@ class PooledConnection implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String methodName = method.getName();
+    // 如果是调用连接的close方法，不是真正的关闭，而是回收到连接池
     if (CLOSE.hashCode() == methodName.hashCode() && CLOSE.equals(methodName)) {
-      dataSource.pushConnection(this);
+      dataSource.pushConnection(this);  // 通过pooled数据源来进行回收
       return null;
     } else {
       try {
+        // 使用前要检查当前连接是否有效
         if (!Object.class.equals(method.getDeclaringClass())) {
           // issue #579 toString() should never fail
           // throw an SQLException instead of a Runtime

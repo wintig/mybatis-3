@@ -31,8 +31,8 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class BeanWrapper extends BaseWrapper {
 
-  private Object object;
-  private MetaClass metaClass;
+  private Object object;    // 实例对象
+  private MetaClass metaClass;  // 类的元数据
 
   public BeanWrapper(MetaObject metaObject, Object object) {
     super(metaObject);

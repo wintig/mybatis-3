@@ -30,14 +30,19 @@ import org.apache.ibatis.cache.CacheException;
  * Simple and inefficient version of EhCache's BlockingCache decorator.
  * It sets a lock over a cache key when the element is not found in cache.
  * This way, other threads will wait until this element is filled instead of hitting the database.
- * 
+ *
+ * 阻塞版本的缓存装饰器，保证只有一个线程到数据库去查找指定key对应的数据
+ *
  * @author Eduardo Macarron
  *
  */
 public class BlockingCache implements Cache {
 
+  // 阻塞的超时时长
   private long timeout;
+  // 被装饰的底层对象，一般是perpetualCache
   private final Cache delegate;
+  // 锁对象集，力度到key值
   private final ConcurrentHashMap<Object, ReentrantLock> locks;
 
   public BlockingCache(Cache delegate) {
@@ -66,8 +71,10 @@ public class BlockingCache implements Cache {
 
   @Override
   public Object getObject(Object key) {
+    // 根据key获得锁对象，获取所成功加锁，获取锁失败阻塞一段时间重试
     acquireLock(key);
     Object value = delegate.getObject(key);
+    // 获取数据成功的，要释放锁
     if (value != null) {
       releaseLock(key);
     }        
@@ -92,16 +99,21 @@ public class BlockingCache implements Cache {
   }
   
   private ReentrantLock getLockForKey(Object key) {
+    // 创建锁
     ReentrantLock lock = new ReentrantLock();
+    // 把新锁添加到locks集合中，如果添加成功使用新锁，如果添加失败则使用locks集合中的锁
     ReentrantLock previous = locks.putIfAbsent(key, lock);
     return previous == null ? lock : previous;
   }
-  
+
   private void acquireLock(Object key) {
+    // 获得锁对象
     Lock lock = getLockForKey(key);
+    // 使用带超时时间的锁
     if (timeout > 0) {
       try {
         boolean acquired = lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+        // 如果超时抛出异常
         if (!acquired) {
           throw new CacheException("Couldn't get a lock in " + timeout + " for the key " +  key + " at the cache " + delegate.getId());  
         }
@@ -109,6 +121,7 @@ public class BlockingCache implements Cache {
         throw new CacheException("Got interrupted while trying to acquire lock for key " + key, e);
       }
     } else {
+      // 使用不带超时时间的锁
       lock.lock();
     }
   }

@@ -22,12 +22,16 @@ import org.apache.ibatis.reflection.factory.ObjectFactory;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 对对象的包装，抽象了对象的属性信息
+ * 定义了一系列查询对象属性信息的方法，以及更新属性的方法
  * @author Clinton Begin
  */
 public interface ObjectWrapper {
 
+  // 获取对象指定属性的值
   Object get(PropertyTokenizer prop);
 
+  // 设置对象指定属性的值
   void set(PropertyTokenizer prop, Object value);
 
   String findProperty(String name, boolean useCamelCaseMapping);
@@ -45,7 +49,8 @@ public interface ObjectWrapper {
   boolean hasGetter(String name);
 
   MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
-  
+
+  // 判断当前对象是否为集合
   boolean isCollection();
   
   public void add(Object element);

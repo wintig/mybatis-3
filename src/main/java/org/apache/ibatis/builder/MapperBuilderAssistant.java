@@ -121,6 +121,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
   }
 
+  // 通过builderAssistant创建缓存对象，并添加至configuration
   public Cache useNewCache(Class<? extends Cache> typeClass,
       Class<? extends Cache> evictionClass,
       Long flushInterval,
@@ -128,6 +129,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       boolean readWrite,
       boolean blocking,
       Properties props) {
+    // 建造者模式，创建一个cache对象
     Cache cache = new CacheBuilder(currentNamespace)
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
@@ -137,6 +139,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .blocking(blocking)
         .properties(props)
         .build();
+    // 将缓存添加至configuration，
     configuration.addCache(cache);
     currentCache = cache;
     return cache;

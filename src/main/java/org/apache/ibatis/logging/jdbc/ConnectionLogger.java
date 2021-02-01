@@ -27,13 +27,15 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
  * Connection proxy to add logging
- * 
+ * 负责打印连接信息和SQL语句，并创建如果是调用preparedStatementLogger
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * 
  */
 public final class ConnectionLogger extends BaseJdbcLogger implements InvocationHandler {
 
+  // 真正的连接对象
   private Connection connection;
 
   private ConnectionLogger(Connection conn, Log statementLog, int queryStack) {
@@ -41,24 +43,32 @@ public final class ConnectionLogger extends BaseJdbcLogger implements Invocation
     this.connection = conn;
   }
 
+  // 对连接的增强
   @Override
   public Object invoke(Object proxy, Method method, Object[] params)
       throws Throwable {
     try {
+      // 如果是从Object继承的方法就忽略
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
-      }    
+      }
+      // 如果是调用prepareStatement、prepareCall、createStatement的方法，打印要执行的sql语句
+      // 并返回prepareStatement的代理对象，让prepareStatement也具备日志的能力，打印参数
       if ("prepareStatement".equals(method.getName())) {
         if (isDebugEnabled()) {
+          // 打印sql语句
           debug(" Preparing: " + removeBreakingWhitespace((String) params[0]), true);
         }        
         PreparedStatement stmt = (PreparedStatement) method.invoke(connection, params);
+        // 创建代理对象
         stmt = PreparedStatementLogger.newInstance(stmt, statementLog, queryStack);
         return stmt;
       } else if ("prepareCall".equals(method.getName())) {
         if (isDebugEnabled()) {
+          // 打印sql语句
           debug(" Preparing: " + removeBreakingWhitespace((String) params[0]), true);
-        }        
+        }
+        // 创建代理对象
         PreparedStatement stmt = (PreparedStatement) method.invoke(connection, params);
         stmt = PreparedStatementLogger.newInstance(stmt, statementLog, queryStack);
         return stmt;

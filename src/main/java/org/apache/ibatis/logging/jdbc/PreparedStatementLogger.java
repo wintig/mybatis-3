@@ -46,9 +46,11 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
-      }          
+      }
+      // 增强PreparedStatement的execute相关方法
       if (EXECUTE_METHODS.contains(method.getName())) {
         if (isDebugEnabled()) {
+          // 当方法执行时，通过动态代理打印参数
           debug("Parameters: " + getParameterValueString(), true);
         }
         clearColumnInfo();
@@ -58,6 +60,7 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
         } else {
           return method.invoke(statement, params);
         }
+        // 将参数设置到columnMap,columnNames,columnValues为打印参数做准备
       } else if (SET_METHODS.contains(method.getName())) {
         if ("setNull".equals(method.getName())) {
           setColumn(params[0], null);

@@ -88,7 +88,9 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   public void parse() {
+    // 判断是否已经加载该泪痣文件
     if (!configuration.isResourceLoaded(resource)) {
+      // 取Mapper.xml元素中的根目录<mapper>元素
       configurationElement(parser.evalNode("/mapper"));
       configuration.addLoadedResource(resource);
       bindMapperForNamespace();
@@ -105,16 +107,22 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void configurationElement(XNode context) {
     try {
+      // 获取mapper节点的namespace
       String namespace = context.getStringAttribute("namespace");
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
+      // 解析cache-ref节点
       cacheRefElement(context.evalNode("cache-ref"));
+      // + 解析cache节点
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+      // + 解析resultMap节点
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      // 解析sql节点
       sqlElement(context.evalNodes("/mapper/sql"));
+      // 解析select|insert|update|delete节点
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
@@ -198,15 +206,24 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void cacheElement(XNode context) throws Exception {
     if (context != null) {
+      // 获取cache节点的type属性(缓存的实现)，默认为PERPETUAL
       String type = context.getStringAttribute("type", "PERPETUAL");
+      // 根据type获取对应的cache接口的实现
       Class<? extends Cache> typeClass = typeAliasRegistry.resolveAlias(type);
+      // 获取缓存淘汰策略，默认LRU
       String eviction = context.getStringAttribute("eviction", "LRU");
+      // 根据淘汰策略，找到装饰器
       Class<? extends Cache> evictionClass = typeAliasRegistry.resolveAlias(eviction);
+      // 读取缓存刷新周期配置
       Long flushInterval = context.getLongAttribute("flushInterval");
+      // 获取缓存容量大小
       Integer size = context.getIntAttribute("size");
+      // 缓存是不是只读
       boolean readWrite = !context.getBooleanAttribute("readOnly", false);
+      // 缓存是否阻塞
       boolean blocking = context.getBooleanAttribute("blocking", false);
       Properties props = context.getChildrenAsProperties();
+      // 通过builderAssistant创建缓存对象，并添加至configuration
       builderAssistant.useNewCache(typeClass, evictionClass, flushInterval, size, readWrite, blocking, props);
     }
   }

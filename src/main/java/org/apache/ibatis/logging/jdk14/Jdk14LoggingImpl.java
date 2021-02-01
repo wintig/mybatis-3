@@ -23,8 +23,10 @@ import org.apache.ibatis.logging.Log;
 /**
  * @author Clinton Begin
  */
+// JDKLog的适配器
 public class Jdk14LoggingImpl implements Log {
 
+  // 真正提供日志能力的jdk日志类
   private Logger log;
 
   public Jdk14LoggingImpl(String clazz) {

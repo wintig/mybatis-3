@@ -30,7 +30,8 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
  * ResultSet proxy to add logging
- * 
+ * 复制打印数据结果信息
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * 
@@ -64,11 +65,12 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
-      }    
+      }
+      // 执行result.next方法，判断是否还有数据
       Object o = method.invoke(rs, params);
       if ("next".equals(method.getName())) {
         if (((Boolean) o)) {
-          rows++;
+          rows++; // 如果结果集里面还有数据，计数器rows++
           if (isTraceEnabled()) {
             ResultSetMetaData rsmd = rs.getMetaData();
             final int columnCount = rsmd.getColumnCount();
@@ -79,6 +81,7 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
             printColumnValues(columnCount);
           }
         } else {
+          // 结果集里面没有数据了，打印rows
           debug("     Total: " + rows, false);
         }
       }

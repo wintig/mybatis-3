@@ -37,33 +37,36 @@ import org.apache.ibatis.reflection.property.PropertyNamer;
 /*
  * This class represents a cached set of class definition information that
  * allows for easy mapping between property names and getter/setter methods.
- */
-/**
+ *
  * @author Clinton Begin
  */
+// 类元数据的封装
 public class Reflector {
 
   private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-  private Class<?> type;
-  private String[] readablePropertyNames = EMPTY_STRING_ARRAY;
-  private String[] writeablePropertyNames = EMPTY_STRING_ARRAY;
-  private Map<String, Invoker> setMethods = new HashMap<String, Invoker>();
-  private Map<String, Invoker> getMethods = new HashMap<String, Invoker>();
-  private Map<String, Class<?>> setTypes = new HashMap<String, Class<?>>();
-  private Map<String, Class<?>> getTypes = new HashMap<String, Class<?>>();
-  private Constructor<?> defaultConstructor;
+  private Class<?> type;  // 对应的class
+  private String[] readablePropertyNames = EMPTY_STRING_ARRAY;  // 可读属性的名称集合，存在get方法即可读
+  private String[] writeablePropertyNames = EMPTY_STRING_ARRAY; // 可写属性的名称集合，存在set方法即可写
+  private Map<String, Invoker> setMethods = new HashMap<String, Invoker>(); // 保存属性相关的set方法
+  private Map<String, Invoker> getMethods = new HashMap<String, Invoker>(); // 保存属性相关的get方法
+  private Map<String, Class<?>> setTypes = new HashMap<String, Class<?>>(); // 保存属性相关的set方法入参类型
+  private Map<String, Class<?>> getTypes = new HashMap<String, Class<?>>(); // 保存属性相关的get方法返回类型
+  private Constructor<?> defaultConstructor;  // class默认的构造函数
 
+  // 记录所有属性的名称集合
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<String, String>();
 
   public Reflector(Class<?> clazz) {
     type = clazz;
-    addDefaultConstructor(clazz);
-    addGetMethods(clazz);
-    addSetMethods(clazz);
-    addFields(clazz);
+    addDefaultConstructor(clazz); //获取clazz的默认构造函数
+    addGetMethods(clazz); //处理clazz中的get方法信息，填充getMethods、getTypes
+    addSetMethods(clazz); //处理clazz中的set方法信息，填充setMethods、setTypes
+    addFields(clazz); //处理没有get、set方法的属性
+    //根据get、set方法初始化可读属性集合和可写属性集合
     readablePropertyNames = getMethods.keySet().toArray(new String[getMethods.keySet().size()]);
     writeablePropertyNames = setMethods.keySet().toArray(new String[setMethods.keySet().size()]);
+    //初始化caseInsensitivePropertyMap
     for (String propName : readablePropertyNames) {
       caseInsensitivePropertyMap.put(propName.toUpperCase(Locale.ENGLISH), propName);
     }
@@ -232,11 +235,11 @@ public class Reflector {
           // pr #16 - final static can only be set by the classloader
           int modifiers = field.getModifiers();
           if (!(Modifier.isFinal(modifiers) && Modifier.isStatic(modifiers))) {
-            addSetField(field);
+            addSetField(field); // 设置给没有生成set方法的属性，生成一个set方法
           }
         }
         if (!getMethods.containsKey(field.getName())) {
-          addGetField(field);
+          addGetField(field); //
         }
       }
     }

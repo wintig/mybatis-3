@@ -53,12 +53,16 @@ public class SimpleExecutor extends BaseExecutor {
   }
 
   @Override
+  // 查询的实现
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      // 创建statementHandler对象
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      // statementHandler对象创建stmt，并使用statementHandler对占位符处理
       stmt = prepareStatement(handler, ms.getStatementLog());
+      // 通过statementHandler对象调用ResultSetHandler将结果集转化为指定对象返回
       return handler.<E>query(stmt, resultHandler);
     } finally {
       closeStatement(stmt);
@@ -70,10 +74,14 @@ public class SimpleExecutor extends BaseExecutor {
     return Collections.emptyList();
   }
 
+  // 创建statement
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    // 获取connection对象的动态代理，添加日志功能
     Connection connection = getConnection(statementLog);
+    // 通过不同statementHandler，利用connection创建（prepare）Statement
     stmt = handler.prepare(connection);
+    // 使用parameterHandler处理占位符
     handler.parameterize(stmt);
     return stmt;
   }

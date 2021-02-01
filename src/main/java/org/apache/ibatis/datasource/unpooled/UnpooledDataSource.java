@@ -36,9 +36,12 @@ import org.apache.ibatis.io.Resources;
  * @author Eduardo Macarron
  */
 public class UnpooledDataSource implements DataSource {
-  
+
+  // 驱动类的类加载器
   private ClassLoader driverClassLoader;
+  // 数据库连接相关配置信息
   private Properties driverProperties;
+  // 缓存已注册的数据库驱动类
   private static Map<String, Driver> registeredDrivers = new ConcurrentHashMap<String, Driver>();
 
   private String driver;
@@ -196,10 +199,11 @@ public class UnpooledDataSource implements DataSource {
     return doGetConnection(props);
   }
 
+  // 从这个代码可以看出，UnpooledDataSource获取连接的方式和手动获取连接的方式是一样的
   private Connection doGetConnection(Properties properties) throws SQLException {
-    initializeDriver();
-    Connection connection = DriverManager.getConnection(url, properties);
-    configureConnection(connection);
+    initializeDriver(); // 实例化驱动
+    Connection connection = DriverManager.getConnection(url, properties); // 从driver里面拿到资源
+    configureConnection(connection); // 设置事务是否自动提交，事务隔离级别
     return connection;
   }
 

@@ -32,14 +32,20 @@ import org.apache.ibatis.logging.Log;
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
+// 所有日志增强的抽象基类
 public abstract class BaseJdbcLogger {
 
+  // 保存prepare statement中常用的set方法（占位符赋值）
   protected static final Set<String> SET_METHODS = new HashSet<String>();
+  // 保存prepare statement中常用的执行sql语句的方法
   protected static final Set<String> EXECUTE_METHODS = new HashSet<String>();
 
+  // 保存prepare statement中set方法的键值对
   private Map<Object, Object> columnMap = new HashMap<Object, Object>();
 
+  // 保存prepare statement中set方法的key值
   private List<Object> columnNames = new ArrayList<Object>();
+  // 保存prepare statement中set方法的value值
   private List<Object> columnValues = new ArrayList<Object>();
 
   protected Log statementLog;
@@ -99,6 +105,7 @@ public abstract class BaseJdbcLogger {
     return columnMap.get(key);
   }
 
+  // 打印参数的值以及参数类型
   protected String getParameterValueString() {
     List<Object> typeList = new ArrayList<Object>(columnValues.size());
     for (Object value : columnValues) {

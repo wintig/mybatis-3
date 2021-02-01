@@ -21,6 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ *
+ * 构成CheckKey的对象
+ * 1：mappedStatement的id
+ * 2：分页信息
+ * 3：查询所使用的SQL语句
+ * 4：用户传递给SQL语句的实际参数值
+ *
  * @author Clinton Begin
  */
 public class CacheKey implements Cloneable, Serializable {
@@ -32,10 +39,10 @@ public class CacheKey implements Cloneable, Serializable {
   private static final int DEFAULT_MULTIPLYER = 37;
   private static final int DEFAULT_HASHCODE = 17;
 
-  private int multiplier;
-  private int hashcode;
-  private long checksum;
-  private int count;
+  private int multiplier; // 参与hash计算的乘数
+  private int hashcode; // CacheKey的hash值，在update函数中实时运算出来的
+  private long checksum; // 校验和（hash值的和）
+  private int count; // updateList中元素的个数
   private List<Object> updateList;
 
   public CacheKey() {
@@ -67,14 +74,15 @@ public class CacheKey implements Cloneable, Serializable {
   }
 
   private void doUpdate(Object object) {
+    // 获取object的hash值
     int baseHashCode = object == null ? 1 : object.hashCode();
 
-    count++;
+    count++;  // 更新count、checkSum以及hashCode的值
     checksum += baseHashCode;
     baseHashCode *= count;
 
     hashcode = multiplier * hashcode + baseHashCode;
-
+    // 将对象添加到updateList中
     updateList.add(object);
   }
 
@@ -105,6 +113,7 @@ public class CacheKey implements Cloneable, Serializable {
       return false;
     }
 
+    // 以上都不相同，才按顺序比较updateList重元素的hash值是否一致
     for (int i = 0; i < updateList.size(); i++) {
       Object thisObject = updateList.get(i);
       Object thatObject = cacheKey.updateList.get(i);
