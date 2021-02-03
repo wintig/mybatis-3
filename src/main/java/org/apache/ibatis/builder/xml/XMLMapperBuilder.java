@@ -88,16 +88,21 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   public void parse() {
-    // 判断是否已经加载该泪痣文件
+    // 判断是否已经加载该配置文件
     if (!configuration.isResourceLoaded(resource)) {
       // 取Mapper.xml元素中的根目录<mapper>元素
       configurationElement(parser.evalNode("/mapper"));
+      // 将mapper文件添加到configuration.loadedResources中
       configuration.addLoadedResource(resource);
+      // 注册mapper接口
       bindMapperForNamespace();
     }
 
+    // 处理解析失败的ResultMap节点
     parsePendingResultMaps();
+    // 处理解析失败的CacheRef节点
     parsePendingChacheRefs();
+    // 处理解析失败的Sql语句节点
     parsePendingStatements();
   }
 

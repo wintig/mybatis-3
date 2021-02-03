@@ -519,6 +519,7 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // 如果有<cache>节点，通过装饰器，添加二级缓存的能力
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
