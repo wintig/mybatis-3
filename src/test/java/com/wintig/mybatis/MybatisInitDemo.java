@@ -83,7 +83,7 @@ public class MybatisInitDemo {
 
 	@Test
 	// ibatis编程模型 本质分析
-	public void originalOperation() throws IOException {
+	public void originalOperation() {
 		// 2.获取sqlSession
 		SqlSession sqlSession = sqlSessionFactory.openSession();
 		// 3.执行查询语句并返回结果
