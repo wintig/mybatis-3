@@ -218,6 +218,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return resultMap;
   }
 
+  // 添加MappedStatement对象
   public Discriminator buildDiscriminator(
       Class<?> resultType,
       String column,
@@ -301,8 +302,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
       statementBuilder.parameterMap(statementParameterMap);
     }
 
+    //使用建造者模式创建一个mappedStatement
     MappedStatement statement = statementBuilder.build();
-    configuration.addMappedStatement(statement);
+    configuration.addMappedStatement(statement); // //将mappedStatement注册到configuration
     return statement;
   }
 

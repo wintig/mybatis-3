@@ -97,34 +97,65 @@ public class Configuration {
 
   protected Environment environment;
 
+  /* 是否启用行内嵌套语句**/
   protected boolean safeRowBoundsEnabled = false;
   protected boolean safeResultHandlerEnabled = true;
+
+  /* 是否启用数据组A_column自动映射到Java类中的驼峰命名的属性**/
   protected boolean mapUnderscoreToCamelCase = false;
+
+  /*当对象使用延迟加载时 属性的加载取决于能被引用到的那些延迟属性,否则,按需加载(需要的是时候才去加载)**/
   protected boolean aggressiveLazyLoading = true;
+
+  /*是否允许单条sql 返回多个数据集  (取决于驱动的兼容性) default:true **/
   protected boolean multipleResultSetsEnabled = true;
+
+  /*-允许JDBC 生成主键。需要驱动器支持。如果设为了true，这个设置将强制使用被生成的主键，有一些驱动器不兼容不过仍然可以执行。  default:false**/
   protected boolean useGeneratedKeys = false;
+
+  /* 使用列标签代替列名。不同的驱动在这方面会有不同的表现， 具体可参考相关驱动文档或通过测试这两种不同的模式来观察所用驱动的结果。**/
   protected boolean useColumnLabel = true;
+
+  /*配置全局性的cache开关，默认为true**/
   protected boolean cacheEnabled = true;
   protected boolean callSettersOnNulls = false;
 
+  /* 日志打印所有的前缀 **/
   protected String logPrefix;
+
+  /* 指定 MyBatis 所用日志的具体实现，未指定时将自动查找**/
   protected Class <? extends Log> logImpl;
   protected Class <? extends VFS> vfsImpl;
+
+  /* 设置本地缓存范围，session：就会有数据的共享，statement：语句范围，这样不会有数据的共享**/
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
+  // 设置但JDBC类型为空时，某些驱动程序 要指定值
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
+
+  // 设置触发延迟加载的方法
   protected Set<String> lazyLoadTriggerMethods = new HashSet<String>(Arrays.asList(new String[] { "equals", "clone", "hashCode", "toString" }));
+
+  // 设置驱动等待数据响应超时数
   protected Integer defaultStatementTimeout;
+
+  // 设置驱动返回结果数的大小
   protected Integer defaultFetchSize;
+
+  // 执行类型，有simple、reuse及batch
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
+  // 指定 MyBatis 应如何自动映射列到字段或属性
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
 
   protected Properties variables = new Properties();
+  // MyBatis每次创建结果对象的新实例时，它都会使用对象工厂（ObjectFactory）去构建POJO
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
-  protected MapperRegistry mapperRegistry = new MapperRegistry(this);
 
+
+  // 延迟加载的全局开关
   protected boolean lazyLoadingEnabled = false;
+  // 指定 Mybatis 创建具有延迟加载能力的对象所用到的代理工具
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
   protected String databaseId;
@@ -136,18 +167,30 @@ public class Configuration {
    */
   protected Class<?> configurationFactory;
 
+  // 插件集合
   protected final InterceptorChain interceptorChain = new InterceptorChain();
+  // TypeHandler注册中心
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
+  // TypeAlias注册中心
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
+  // mapper接口的动态代理注册中心
+  protected MapperRegistry mapperRegistry = new MapperRegistry(this);
+  // mapper文件中增删改查操作的注册中心
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection");
+  // mapper文件中配置cache节点的 二级缓存
   protected final Map<String, Cache> caches = new StrictMap<Cache>("Caches collection");
+  // mapper文件中配置的所有resultMap对象  key为命名空间+ID
   protected final Map<String, ResultMap> resultMaps = new StrictMap<ResultMap>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<ParameterMap>("Parameter Maps collection");
+
+  // mapper文件中配置KeyGenerator的insert和update节点，key为命名空间+ID
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<KeyGenerator>("Key Generators collection");
 
+  // 加载到的所有*mapper.xml文件
   protected final Set<String> loadedResources = new HashSet<String>();
+  // mapper文件中配置的sql元素，key为命名空间+ID
   protected final Map<String, XNode> sqlFragments = new StrictMap<XNode>("XML fragments parsed from previous mappers");
 
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<XMLStatementBuilder>();
@@ -610,7 +653,7 @@ public class Configuration {
   }
 
   public void addMappedStatement(MappedStatement ms) {
-    mappedStatements.put(ms.getId(), ms);
+    mappedStatements.put(ms.getId(), ms); // 以ns+id作为key，ms为值注册到mappedStatement
   }
 
   public Collection<String> getMappedStatementNames() {

@@ -45,11 +45,11 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class DefaultSqlSession implements SqlSession {
 
-  private Configuration configuration;
-  private Executor executor;
+  private Configuration configuration;  // configuration对象，全局唯一
+  private Executor executor;  // 底层依赖的executor对象
 
-  private boolean autoCommit;
-  private boolean dirty;
+  private boolean autoCommit; // 是否自动提交事务
+  private boolean dirty;  // 当前缓存是否有脏数据
 
   public DefaultSqlSession(Configuration configuration, Executor executor, boolean autoCommit) {
     this.configuration = configuration;
