@@ -23,11 +23,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * 用于生产mapper接口动态代理的实例对象
  * @author Lasse Voss
  */
 public class MapperProxyFactory<T> {
 
+  // mapper接口的class对象
   private final Class<T> mapperInterface;
+  // key是mapper接口中的某个方法的method对象，value是对应的MapperMethod
+  // MapperMethod对象不记录任何状态信息，所以它可以在多个代理对象之间共享
   private final Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<Method, MapperMethod>();
 
   public MapperProxyFactory(Class<T> mapperInterface) {

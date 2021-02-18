@@ -36,8 +36,9 @@ import java.util.*;
  * @author Lasse Voss
  */
 public class MapperMethod {
-
+  // 从configuration中获取方法的命名空间，方法名，以及SQL语句的类型
   private final SqlCommand command;
+  // 封装mapper接口的方法的相关信息（入参，返回类型 ）
   private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
@@ -45,8 +46,10 @@ public class MapperMethod {
     this.method = new MethodSignature(config, method);
   }
 
+  // 三步翻译在此完成
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    // 第一步 根据sql语句的类型以及接口返回的参数选择调用不同的方法
     if (SqlCommandType.INSERT == command.getType()) {
       Object param = method.convertArgsToSqlCommandParam(args);
       result = rowCountResult(sqlSession.insert(command.getName(), param));
@@ -57,15 +60,17 @@ public class MapperMethod {
       Object param = method.convertArgsToSqlCommandParam(args);
       result = rowCountResult(sqlSession.delete(command.getName(), param));
     } else if (SqlCommandType.SELECT == command.getType()) {
+      // 返回值为void
       if (method.returnsVoid() && method.hasResultHandler()) {
         executeWithResultHandler(sqlSession, args);
         result = null;
-      } else if (method.returnsMany()) {
+      } else if (method.returnsMany()) {  // 返回值为集合或者数组
         result = executeForMany(sqlSession, args);
-      } else if (method.returnsMap()) {
+      } else if (method.returnsMap()) { // 返回值为map
         result = executeForMap(sqlSession, args);
-      } else {
-        Object param = method.convertArgsToSqlCommandParam(args);
+      } else {  // 处理返回为单一对象的情况
+        // 通过参数解析器解析参数
+        Object param = method.convertArgsToSqlCommandParam(args); // 第三步翻译，将入参转化为map
         result = sqlSession.selectOne(command.getName(), param);
       }
     } else if (SqlCommandType.FLUSH == command.getType()) {
@@ -174,12 +179,17 @@ public class MapperMethod {
 
   public static class SqlCommand {
 
-    private final String name;
+    // SQL的名称，命名空间+方法名
+    private final String name; // 第二步翻译：生产命名空间
+
+    // SQL语句的类型
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       String statementName = mapperInterface.getName() + "." + method.getName();
       MappedStatement ms = null;
+
+      // 从configuration对象中获取mapperStatement
       if (configuration.hasStatement(statementName)) {
         ms = configuration.getMappedStatement(statementName);
       } else if (!mapperInterface.equals(method.getDeclaringClass())) { // issue #35
@@ -195,9 +205,9 @@ public class MapperMethod {
         } else {
           throw new BindingException("Invalid bound statement (not found): " + statementName);
         }
-      } else {
-        name = ms.getId();
-        type = ms.getSqlCommandType();
+      } else {  // 如果mapperStatement不为null
+        name = ms.getId();  // 获取sql名称，命名空间+方法名称
+        type = ms.getSqlCommandType();  // 获取sql语句的类型
         if (type == SqlCommandType.UNKNOWN) {
           throw new BindingException("Unknown execution method for: " + name);
         }
@@ -213,12 +223,15 @@ public class MapperMethod {
     }
   }
 
+  /**
+   * 对于mapper接口中方法的封装
+   */
   public static class MethodSignature {
 
-    private final boolean returnsMany;
-    private final boolean returnsMap;
-    private final boolean returnsVoid;
-    private final Class<?> returnType;
+    private final boolean returnsMany;  // 返回参数是否为集合类型或者数组
+    private final boolean returnsMap; // 返回参数是否为map
+    private final boolean returnsVoid;  // 返回值是否为空
+    private final Class<?> returnType;  // 返回值类型
     private final String mapKey;
     private final Integer resultHandlerIndex;
     private final Integer rowBoundsIndex;
